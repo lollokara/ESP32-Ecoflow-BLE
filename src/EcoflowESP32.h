@@ -18,6 +18,8 @@
 #include "freertos/task.h"
 #include "freertos/queue.h"
 #include "pd335_sys.pb.h"
+#include "mr521.pb.h"
+#include "dc009_apl_comm.pb.h"
 
 #define MAX_CONNECT_ATTEMPTS 5
 
@@ -149,6 +151,34 @@ public:
     bool setAcChargingLimit(int watts);
     bool setBatterySOCLimits(int maxChg, int minDsg);
 
+    // Wave 2 Specific Commands
+    void setAmbientLight(uint8_t status);
+    void setAutomaticDrain(uint8_t enable);
+    void setBeep(uint8_t on);
+    void setFanSpeed(uint8_t speed);
+    void setMainMode(uint8_t mode);
+    void setPowerState(uint8_t on);
+    void setTemperature(uint8_t temp);
+    void setCountdownTimer(uint8_t status);
+    void setIdleScreenTimeout(uint8_t time);
+    void setSubMode(uint8_t sub_mode);
+    void setTempDisplayType(uint8_t type);
+    void setTempUnit(uint8_t unit);
+
+    // Delta Pro 3 Specific Commands
+    bool setEnergyBackup(bool enabled);
+    bool setEnergyBackupLevel(int level);
+    bool setAcHvPort(bool enabled);
+    bool setAcLvPort(bool enabled);
+
+    // Alternator Charger Specific Commands
+    bool setChargerOpen(bool enabled);
+    bool setChargerMode(int mode);
+    bool setPowerLimit(int limit);
+    bool setBatteryVoltage(float voltage);
+    bool setCarBatteryChargeLimit(float amps);
+    bool setDeviceBatteryChargeLimit(float amps);
+
     /**
      * @brief Disconnects from the device and clears saved credentials.
      */
@@ -188,12 +218,17 @@ private:
     void _handlePacket(Packet* pkt);
 
     bool _sendCommand(const std::vector<uint8_t>& command);
-    
+    bool _sendWave2Command(uint8_t cmdId, const std::vector<uint8_t>& payload);
+
     // --- Authentication Flow ---
     void _startAuthentication();
     void _handleAuthPacket(Packet* pkt);
     void _sendConfigPacket(const pd335_sys_ConfigWrite& config);
-
+    uint8_t _getDeviceDest();
+    void _sendConfigPacket(const mr521_ConfigWrite& config);
+    void _sendConfigPacket(const dc009_apl_comm_ConfigWrite& config);
+    void _handleAuthHandshake(const std::vector<uint8_t>& payload);
+    
     static std::vector<EcoflowESP32*> _instances;
     ConnectionState _state = ConnectionState::NOT_CONNECTED;
     ConnectionState _lastState = ConnectionState::NOT_CONNECTED;

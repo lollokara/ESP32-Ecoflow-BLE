@@ -59,7 +59,6 @@ struct Wave2Data {
     int timeRemainVal = 0;
     int beepEnable = 0;
     uint32_t errCode = 0;
-    // std::string name; // Removed for safe struct usage
     int refEn = 0;
     int bmsPid = 0;
     int wteFthEn = 0;
@@ -86,12 +85,63 @@ struct Wave2Data {
     int remainingTime = 0;
 };
 
+struct DeltaPro3Data {
+    float batteryLevel = 0;
+    float acInputPower = 0;
+    float acLvOutputPower = 0;
+    float acHvOutputPower = 0;
+    float inputPower = 0;
+    float outputPower = 0;
+    float dc12vOutputPower = 0;
+    float dcLvInputPower = 0;
+    float dcHvInputPower = 0;
+    int dcLvInputState = -1;
+    int dcHvInputState = -1;
+    float usbcOutputPower = 0;
+    float usbc2OutputPower = 0;
+    float usbaOutputPower = 0;
+    float usba2OutputPower = 0;
+    int acChargingSpeed = 0;
+    int maxAcChargingPower = 0;
+    bool pluggedInAc = false;
+    bool energyBackup = false;
+    int energyBackupBatteryLevel = 0;
+    int batteryChargeLimitMin = 0;
+    int batteryChargeLimitMax = 100;
+    int cellTemperature = 0;
+    bool dc12vPort = false;
+    bool acLvPort = false;
+    bool acHvPort = false;
+    float solarLvPower = 0;
+    float solarHvPower = 0;
+};
+
+struct AlternatorChargerData {
+    float batteryLevel = 0;
+    float batteryTemperature = 0;
+    float dcPower = 0;
+    float carBatteryVoltage = 0;
+    float startVoltage = 0;
+    int startVoltageMin = 11;
+    int startVoltageMax = 31;
+    int chargerMode = 0; // 0=Idle, 1=Charge, 2=Maintenance, 3=Reverse
+    bool chargerOpen = false;
+    int powerLimit = 0;
+    int powerMax = 0;
+    float reverseChargingCurrentLimit = 0;
+    float chargingCurrentLimit = 0;
+    float reverseChargingCurrentMax = 0;
+    float chargingCurrentMax = 0;
+};
+
 struct EcoflowData {
     bool isConnected = false;
 
     // Substructs
     Delta3Data delta3;
     Wave2Data wave2;
+    DeltaPro3Data deltaPro3;
+    AlternatorChargerData alternatorCharger;
 };
 
 #endif // ECOFLOW_DATA_H

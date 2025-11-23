@@ -1,0 +1,191 @@
+syntax = "proto3";
+
+package dc009_apl_comm;
+
+enum SP_CHARGER_CHG_MODE {
+  SP_CHARGER_CHG_MODE_IDLE = 0;
+  SP_CHARGER_CHG_MODE_DRIVING_CHG = 1;
+  SP_CHARGER_CHG_MODE_BAT_MAINTENANCE = 2;
+  SP_CHARGER_CHG_MODE_PARKING_CHG = 3;
+}
+
+enum SP_CHARGER_DRIVING_CHG_SETTING {
+  DRIVING_CHG_SETTING_IDLE = 0;
+  DRIVING_CHG_SETTING_12V_IN_24V_OUT = 1;
+  DRIVING_CHG_SETTING_12V_IN_48V_OUT = 2;
+  DRIVING_CHG_SETTING_24V_IN_48V_OUT = 3;
+}
+
+enum CAR_BATT_TYPE {
+  CAR_BATT_IDLE = 0;
+  CAR_BATT_12V_TYPE = 1;
+  CAR_BATT_24V_TYPE = 2;
+}
+
+enum DEV_BATT_CHG_XT60_SETTING {
+  DEV_BATT_CHG_XT60_IDLE = 0;
+  DEV_BATT_CHG_XT60_EF_DELTA_SERIES = 1;
+  DEV_BATT_CHG_XT60_EF_11V_TO_30V_SERIES = 2;
+  DEV_BATT_CHG_XT60_EF_11V_TO_60V_SERIES = 3;
+  DEV_BATT_CHG_XT60_OTHER_11V_TO_30V_SERIES = 4;
+  DEV_BATT_CHG_XT60_OTHER_11V_TO_60V_SERIES = 5;
+}
+
+message EventPush {
+  message LogItem {
+    optional uint32 unix_time = 1;
+    optional uint32 ms = 2;
+    optional uint32 event_no = 3;
+    repeated float event_detail = 4;
+  }
+
+  optional uint32 event_ver = 1;
+  optional uint32 event_seq = 2;
+  repeated EventPush.LogItem event_item = 3;
+}
+
+message EventAck {
+  optional uint32 result = 1;
+  optional uint32 event_seq = 2;
+  optional uint32 event_item_num = 3;
+}
+
+message PropertyUploadPeriod {
+  optional int32 display_property_full_upload_period = 1;
+  optional int32 display_property_incremental_upload_period = 2;
+  optional int32 runtime_property_full_upload_period = 3;
+  optional int32 runtime_property_incremental_upload_period = 4;
+}
+
+message SpChargerDevBattChgXt60Setting {
+  optional CAR_BATT_TYPE car_batt_type = 1;
+  optional DEV_BATT_CHG_XT60_SETTING dev_batt_chg_xt60_setting = 2;
+}
+
+message ConfigWrite {
+  optional bool cfg_power_off = 3;
+  optional bool cfg_power_on = 4;
+  optional uint32 reset_factory_setting = 5;
+  optional uint32 cfg_utc_time = 6;
+  optional int32 cfg_utc_timezone = 7;
+  optional int32 cfg_display_property_full_upload_period = 67;
+  optional int32 cfg_display_property_incremental_upload_period = 68;
+  optional int32 cfg_runtime_property_full_upload_period = 69;
+  optional int32 cfg_runtime_property_incremental_upload_period = 70;
+  optional bool active_display_property_full_upload = 71;
+  optional bool active_runtime_property_full_upload = 72;
+  optional SP_CHARGER_CHG_MODE cfg_sp_charger_chg_mode = 116;
+  optional bool cfg_sp_charger_chg_open = 122;
+  optional float cfg_sp_charger_chg_pow_limit = 123;
+  optional uint32 cfg_sp_charger_car_batt_vol_setting = 137;
+  optional float cfg_sp_charger_extension_line_p_setting = 203;
+  optional float cfg_sp_charger_extension_line_n_setting = 204;
+  optional SP_CHARGER_DRIVING_CHG_SETTING cfg_sp_charger_driving_chg_setting = 205;
+  optional float cfg_sp_charger_car_batt_chg_amp_limit = 217;
+  optional float cfg_sp_charger_dev_batt_chg_amp_limit = 218;
+  optional SpChargerDevBattChgXt60Setting cfg_sp_charger_dev_batt_chg_xt60_setting = 219;
+  optional bool cfg_sp_charger_car_batt_urgent_chg_switch = 221;
+}
+
+message ConfigWriteAck {
+  optional uint32 action_id = 1;
+  optional bool config_ok = 2;
+  optional bool cfg_power_off = 3;
+  optional bool cfg_power_on = 4;
+  optional uint32 reset_factory_setting = 5;
+  optional uint32 cfg_utc_time = 6;
+  optional int32 cfg_utc_timezone = 7;
+  optional int32 cfg_display_property_full_upload_period = 67;
+  optional int32 cfg_display_property_incremental_upload_period = 68;
+  optional int32 cfg_runtime_property_full_upload_period = 69;
+  optional int32 cfg_runtime_property_incremental_upload_period = 70;
+  optional bool active_display_property_full_upload = 71;
+  optional bool active_runtime_property_full_upload = 72;
+  optional SP_CHARGER_CHG_MODE cfg_sp_charger_chg_mode = 116;
+  optional bool cfg_sp_charger_chg_open = 122;
+  optional float cfg_sp_charger_chg_pow_limit = 123;
+  optional uint32 cfg_sp_charger_car_batt_vol_setting = 137;
+  optional float cfg_sp_charger_extension_line_p_setting = 203;
+  optional float cfg_sp_charger_extension_line_n_setting = 204;
+  optional SP_CHARGER_DRIVING_CHG_SETTING cfg_sp_charger_driving_chg_setting = 205;
+  optional float cfg_sp_charger_car_batt_chg_amp_limit = 217;
+  optional float cfg_sp_charger_dev_batt_chg_amp_limit = 218;
+  optional SpChargerDevBattChgXt60Setting cfg_sp_charger_dev_batt_chg_xt60_setting = 219;
+  optional bool cfg_sp_charger_car_batt_urgent_chg_switch = 221;
+}
+
+message ConfigRead {
+  repeated uint32 action_id = 1;
+}
+
+message ConfigReadAck {
+  optional uint32 cfg_utc_time = 6;
+  optional int32 cfg_utc_timezone = 7;
+}
+
+message DisplayPropertyUpload {
+  optional bool dev_online_flag = 130;
+  optional int32 utc_timezone = 133;
+  optional uint32 errcode = 1;
+  optional float cms_batt_soc = 262;
+  optional uint32 cms_chg_dsg_state = 282;
+  optional uint32 cms_dsg_rem_time = 268;
+  optional uint32 cms_chg_rem_time = 269;
+  optional int32 cms_batt_temp = 102;
+  optional float pow_in_sum_w = 3;
+  optional float pow_out_sum_w = 4;
+  optional float pow_get_dcp = 425;
+  optional float pow_get_dc_bidi = 105;
+  optional bool plug_in_info_dc_bidi_flag = 106;
+  optional bool plug_in_info_dcp_in_flag = 426;
+  optional uint32 plug_in_info_dcp_type = 427;
+  optional uint32 plug_in_info_dcp_detail = 428;
+  optional string plug_in_info_dcp_sn = 433;
+  optional uint32 plug_in_info_dcp_run_state = 436;
+  optional SP_CHARGER_CHG_MODE sp_charger_chg_mode = 581;
+  optional bool sp_charger_chg_open = 597;
+  optional float sp_charger_chg_pow_limit = 598;
+  optional float sp_charger_chg_pow_max = 603;
+  optional uint32 sp_charger_run_state = 582;
+  optional bool sp_charger_is_connect_car = 583;
+  optional uint32 sp_charger_car_batt_vol_setting = 138;
+  optional float sp_charger_car_batt_vol = 139;
+  optional float sp_charger_extension_line_p_setting = 608;
+  optional float sp_charger_extension_line_n_setting = 609;
+  optional SP_CHARGER_DRIVING_CHG_SETTING sp_charger_driving_chg_setting = 610;
+  optional float sp_charger_car_batt_chg_amp_limit = 624;
+  optional float sp_charger_dev_batt_chg_amp_limit = 625;
+  optional SpChargerDevBattChgXt60Setting sp_charger_dev_batt_chg_xt60_setting = 626;
+  optional float sp_charger_car_batt_chg_amp_max = 723;
+  optional float sp_charger_dev_batt_chg_amp_max = 725;
+  optional bool sp_charger_car_batt_urgent_chg_switch = 726;
+  optional uint32 sp_charger_car_batt_urgent_chg_state = 724;
+  optional float module_bluetooth_snr = 599;
+  optional float module_bluetooth_rssi = 600;
+  optional float module_wifi_snr = 601;
+  optional float module_wifi_rssi = 602;
+}
+
+message RuntimePropertyUpload {
+  optional int32 display_property_full_upload_period = 293;
+  optional int32 display_property_incremental_upload_period = 294;
+  optional int32 runtime_property_full_upload_period = 295;
+  optional int32 runtime_property_incremental_upload_period = 296;
+  optional float plug_in_info_dc_bidi_vol = 103;
+  optional float plug_in_info_dc_bidi_amp = 104;
+  optional float plug_in_info_dcp_vol = 443;
+  optional float plug_in_info_dcp_amp = 448;
+}
+
+message DevRequest {
+  optional uint32 dev_utc_time = 1;
+  optional float dev_utc_timezone = 2;
+  optional bool require_property_upload_period = 3;
+  optional bool require_time_service = 5;
+}
+
+message DevRequestAck {
+  optional uint32 request_id = 1;
+  optional uint32 require_ok = 2;
+  optional PropertyUploadPeriod property_upload_period = 3;
+}

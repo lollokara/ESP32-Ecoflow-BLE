@@ -1,89 +1,106 @@
-# ESP32 Ecoflow BLE
+# ⧉ ECOFLOW-ESP32 // CYBER_DECK
 
-This project provides a C++ library for ESP32 devices to communicate with EcoFlow power stations over Bluetooth Low Energy (BLE). It allows you to monitor key metrics like battery percentage and power input/output, as well as control the device's AC, DC, and USB ports—all locally, without relying on the cloud.
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)
+![Platform: ESP32](https://img.shields.io/badge/Platform-ESP32-blue.svg?style=for-the-badge&logo=espressif)
+![Status: ONLINE](https://img.shields.io/badge/Status-ONLINE-brightgreen.svg?style=for-the-badge&blink=true)
 
-This library is a port of the excellent Python implementation, bringing its core functionalities to the PlatformIO ecosystem for embedded devices.
+> **WARNING:** UNAUTHORIZED CLOUD DISCONNECTION IMMINENT.
+> **TARGET:** LOCAL CONTROL ESTABLISHED.
 
-## Features
+**EcoflowESP32** is a futuristic, reverse-engineered C++ library for the ESP32 that enables **direct, offline control** of EcoFlow power stations via Bluetooth Low Energy (BLE). No clouds, no servers, just you and your hardware.
 
--   **Local Control:** Communicate directly with your EcoFlow device over BLE.
--   **Real-time Monitoring:** Get live data for battery percentage, input/output power, and more.
--   **Remote Control:** Toggle the AC, DC, and USB ports on and off.
--   **Secure:** Implements the EcoFlow authentication handshake and AES-encrypted communication.
--   **REALLY SECURE** SECP160A EC was custom implemented since EF used a not really standard curve
+---
 
-## Supported Devices
+## ≡ SYSTEM CAPABILITIES
 
-Currently, the library has been tested and is known to work with:
+*   **[>> COMPLETE LOCAL CONTROL]**: Bypass the cloud. Toggle AC/DC/USB ports directly from your microcontroller.
+*   **[>> REAL-TIME TELEMETRY]**: Monitor battery levels, input/output wattage, and temperatures with millisecond precision.
+*   **[>> CRYPTOGRAPHIC SECURITY]**: Full implementation of the EcoFlow ECDH + AES-128 handshake.
+*   **[>> MULTI-DEVICE SUPPORT]**: Seamlessly manage Delta 3, Wave 2, and Delta Pro 3 devices simultaneously.
 
--   **EcoFlow Delta 3**
--   **EcoFlow Wave 2 (Partial Support)**
+---
 
-Support for more devices is planned for the future. Contributions are welcome!
+## ≡ SUPPORTED HARDWARE
 
-## Installation
+| DEVICE | ID | STATUS | PROTOCOL |
+| :--- | :--- | :--- | :--- |
+| **EcoFlow Delta 3** | `D3` | **[FULL ACCESS]** | V3 (Protobuf) |
+| **EcoFlow Wave 2** | `W2` | **[PARTIAL]** | V2 (Binary) |
+| **EcoFlow Delta Pro 3** | `D3P` | **[BETA]** | V3 (Protobuf) |
+| **Alternator Charger** | `AC` | **[BETA]** | V3 (Protobuf) |
 
-This library is designed for the PlatformIO ecosystem.
+---
 
-1.  **Clone the Repository:**
-    ```
-    git clone [repository-url]
-    ```
+## ≡ QUICK DEPLOYMENT
 
-2.  **Add to Your Project:**
-    Place the `EcoflowESP32` directory inside the `lib/` folder of your PlatformIO project.
+### 1. INITIALIZE PROTOCOL
+Clone the repo into your PlatformIO `lib/` directory.
 
-3.  **Credentials:**
-    You will need to provide your EcoFlow credentials in a `Credentials.h` file inside the `src/` directory.
+```bash
+git clone https://github.com/YourRepo/EcoflowESP32.git lib/EcoflowESP32
+```
 
-    Populate `EcoflowESP32/src/Credentials.h` with the following content:
-    ```cpp
-    #define ECOFLOW_USER_ID "YOUR_ECOFLOW_USER_ID"
-    ```
-
-## How to Use
-
-Here is a basic example of how to use the library to connect to a Delta 3 device and print its battery level. For more advanced examples, including how to manage multiple devices, please see the `examples/` directory.
-
+### 2. CONFIGURE CREDENTIALS
+Create `src/Credentials.h`:
 ```cpp
-#include <Arduino.h>
+#define ECOFLOW_USER_ID "USER_ID_FROM_APP"
+#define ECOFLOW_DEVICE_SN "DEVICE_SERIAL_NUMBER"
+#define ECOFLOW_KEYDATA "APP_KEY_HEX_STRING"
+```
+
+### 3. FLASH FIRMWARE
+```cpp
 #include "DeviceManager.h"
-#include "Credentials.h" // Make sure to fill this file with your data
 
 void setup() {
-  Serial.begin(115200);
-  Serial.println("Starting EcoflowESP32 example...");
+    // BOOT SYSTEM
+    DeviceManager::getInstance().initialize();
 
-  // Initialize the DeviceManager.
-  DeviceManager::getInstance().initialize();
-
-  // Start scanning for a Delta 3 device.
-  // After this the device will be paired
-  DeviceManager::getInstance().scanAndConnect(DeviceType::DELTA_3);
+    // INITIATE SCAN
+    DeviceManager::getInstance().scanAndConnect(DeviceType::DELTA_3);
 }
 
 void loop() {
-  // The DeviceManager handles all BLE updates.
-  DeviceManager::getInstance().update();
-
-  // Get the device instance from the manager.
-  EcoflowESP32* delta3 = DeviceManager::getInstance().getDevice(DeviceType::DELTA_3);
-
-  // Check if the device is fully connected and authenticated.
-  if (delta3 && delta3->isAuthenticated()) {
-    Serial.print("Battery Level: ");
-    Serial.print(delta3->getBatteryLevel());
-    Serial.println("%");
-  } else {
-    Serial.println("Device not authenticated, waiting...");
-  }
-
-  delay(5000);
+    // MAINTAIN LINK
+    DeviceManager::getInstance().update();
 }
 ```
 
-For more detailed examples, please see the `examples/` directory.
+---
 
-## Contributing
+## ≡ DOCUMENTATION MATRIX
 
-Contributions are welcome! If you would like to help improve this library, please feel free to submit a pull request or open an issue. Whether it's adding support for a new device, fixing a bug, or improving documentation, all contributions are appreciated.
+Access the classified technical archives for deep implementation details.
+
+| [SYSTEM ARCHITECTURE](docs/Architecture.md) | [PROTOCOL REFERENCE](docs/Protocol.md) |
+| :---: | :---: |
+| ![Architecture](https://img.shields.io/badge/VIEW-BLUEPRINT-blue?style=flat-square) | ![Protocol](https://img.shields.io/badge/VIEW-PACKETS-red?style=flat-square) |
+| **Class Diagrams & Logic Flow** | **Byte-level V2/V3 Analysis** |
+
+| [HARDWARE SCHEMATICS](docs/Hardware_Reference.md) | [CODEBASE MAP](docs/Code_Reference.md) |
+| :---: | :---: |
+| ![Hardware](https://img.shields.io/badge/VIEW-WIRING-yellow?style=flat-square) | ![API](https://img.shields.io/badge/VIEW-API-green?style=flat-square) |
+| **Pinouts & Wiring Diagrams** | **Class & Method Reference** |
+
+---
+
+## ≡ SYSTEM OVERVIEW
+
+```mermaid
+graph LR
+    USER[User / Auto-Logic] -->|Control| ESP{ESP32 CORE}
+    ESP -->|BLE 4.2| DEV[EcoFlow Device]
+
+    subgraph "EcoflowESP32 Library"
+        ESP --> MGR[DeviceManager]
+        MGR --> CRYPTO[Crypto Engine]
+        MGR --> PROTO[Protocol V3]
+    end
+
+    DEV -->|Notifications| ESP
+    ESP -->|Telemetry| SCREEN[LED Matrix / Web UI]
+```
+
+---
+
+> *END OF LINE.*

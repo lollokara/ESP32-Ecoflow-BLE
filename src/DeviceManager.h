@@ -1,29 +1,11 @@
-/**
- * @file DeviceManager.h
- * @author Lollokara
- * @brief Manages connections to multiple EcoFlow devices.
- *
- * This header defines the DeviceManager class, a singleton responsible for
- * scanning, connecting to, and managing individual EcoFlowESP32 instances.
- * It is designed to handle different device types, like the Delta 3 and Wave 2,
- * and persists their connection details.
- */
-
 #ifndef DEVICE_MANAGER_H
 #define DEVICE_MANAGER_H
 
 #include "EcoflowESP32.h"
+#include "types.h"
 #include <vector>
+#include <deque>
 #include <Preferences.h>
-
-/**
- * @enum DeviceType
- * @brief Enumerates the supported EcoFlow device types.
- */
-enum class DeviceType {
-    DELTA_3, // Represents the Delta 3 device
-    WAVE_2   // Represents the Wave 2 device
-};
 
 /**
  * @struct DeviceSlot
@@ -104,16 +86,36 @@ public:
       */
     bool isAnyConnecting();
 
+    // --- Management Commands ---
+    void printStatus();
+    void forget(DeviceType type);
+    String getDeviceStatusJson();
+
+    // --- Telemetry History ---
+    std::vector<int> getWave2TempHistory();
+    std::vector<int> getSolarHistory(DeviceType type);
+
 private:
     DeviceManager();
 
     // Device instances
     EcoflowESP32 d3;
     EcoflowESP32 w2;
+    EcoflowESP32 d3p;
+    EcoflowESP32 ac;
+
     DeviceSlot slotD3;
     DeviceSlot slotW2;
+    DeviceSlot slotD3P;
+    DeviceSlot slotAC;
 
     Preferences prefs;
+
+    // Telemetry History
+    std::deque<int8_t> _wave2History;
+    std::deque<int16_t> _d3SolarHistory;
+    std::deque<int16_t> _d3pSolarHistory;
+    uint32_t _lastHistorySample = 0;
 
     // BLE Scanning members
     NimBLEScan* pScan = nullptr;
@@ -140,9 +142,11 @@ private:
     void loadDevices();
     void _handlePendingConnection();
     void _manageScanning();
+    void _updateHistory();
 
     // Connection queue members (not currently used but kept for potential future use)
     bool _hasPendingConnection = false;
+    std::string _pendingSN;
     NimBLEAdvertisedDevice* _pendingDevice = nullptr;
     SemaphoreHandle_t _scanMutex;
 };

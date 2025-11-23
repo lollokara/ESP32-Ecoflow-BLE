@@ -30,7 +30,9 @@ enum class DashboardView {
     D3_BATT,
     D3_SOLAR,
     W2_BATT,
-    W2_TEMP
+    W2_TEMP,
+    D3P_BATT,
+    AC_BATT // Alternator Charger
 };
 
 enum class SelectionPage {
@@ -55,7 +57,9 @@ enum class LimitsPage {
 
 enum class DevicePage {
     D3,
-    W2
+    W2,
+    D3P,
+    CHG
 };
 
 enum class DeviceActionPage {
@@ -187,17 +191,9 @@ void drawNcScreen() {
     drawText(x, 1, text, cRed);
 }
 
-void drawDashboard(DeviceSlot* slotD3, DeviceSlot* slotW2) {
-    bool w2Connected = slotW2->isConnected;
-    bool w2HasBatt = w2Connected && (slotW2->instance->getBatteryLevel() > 0);
-
-    if (currentDashboardView == DashboardView::W2_BATT && !w2HasBatt) currentDashboardView = DashboardView::D3_BATT;
-    if (currentDashboardView == DashboardView::W2_TEMP && !w2Connected) currentDashboardView = DashboardView::D3_BATT;
-    if ((currentDashboardView == DashboardView::D3_BATT || currentDashboardView == DashboardView::D3_SOLAR) && !slotD3->isConnected) {
-         strip.setBrightness(25);
-         drawNcScreen();
-         return;
-    }
+void drawDashboard(DeviceSlot* slotD3, DeviceSlot* slotW2, DeviceSlot* slotD3P, DeviceSlot* slotAC) {
+    // Basic dashboard logic: prioritize showing connected devices
+    // For now, keep it simple: cycle through views. If a view's device is not connected, skip or show NC.
 
     uint32_t color = cGreen;
     String text = "";
@@ -205,46 +201,56 @@ void drawDashboard(DeviceSlot* slotD3, DeviceSlot* slotW2) {
 
     switch(currentDashboardView) {
         case DashboardView::D3_BATT:
-        {
-            int batt = slotD3->instance->getBatteryLevel();
-            if (slotD3->instance->getInputPower() > 0) {
-                float t = (float)millis() / 2000.0f;
-                float val = (sin(t) + 1.0f) / 2.0f;
-                int minB = 7;
-                int maxB = 51;
-                brightness = minB + (int)(val * (maxB - minB));
-                color = cGreen;
-            } else {
-                if (batt < 20) color = cRed;
-                else if (batt < 60) color = cYellow;
-                else color = cGreen;
+            if (!slotD3->isConnected) { text = "NC"; color = cRed; }
+            else {
+                int batt = slotD3->instance->getBatteryLevel();
+                if (slotD3->instance->getInputPower() > 0) {
+                     float t = (float)millis() / 2000.0f;
+                     float val = (sin(t) + 1.0f) / 2.0f;
+                     brightness = 7 + (int)(val * 44);
+                }
+                if (batt > 99) batt = 99;
+                text = String(batt) + "%";
             }
-            if (batt > 99) batt = 99;
-            text = String(batt) + "%";
             break;
-        }
         case DashboardView::D3_SOLAR:
-        {
-            int solar = slotD3->instance->getSolarInputPower();
-            text = String(solar);
-            color = cYellow;
+            if (!slotD3->isConnected) { text = "NC"; color = cRed; }
+            else {
+                text = String(slotD3->instance->getSolarInputPower());
+                color = cYellow;
+            }
             break;
-        }
         case DashboardView::W2_BATT:
-        {
-             int batt = slotW2->instance->getBatteryLevel();
-             if (batt > 99) batt = 99;
-             text = String(batt) + "%";
-             color = cBlue;
+             if (!slotW2->isConnected) { text = "NC"; color = cRed; }
+             else {
+                 int batt = slotW2->instance->getBatteryLevel();
+                 text = String(batt > 99 ? 99 : batt) + "%";
+                 color = cBlue;
+             }
              break;
-        }
         case DashboardView::W2_TEMP:
-        {
-            int temp = slotW2->instance->getAmbientTemperature();
-            text = String(temp) + "C";
-            color = cWhite;
+            if (!slotW2->isConnected) { text = "NC"; color = cRed; }
+            else {
+                text = String(slotW2->instance->getAmbientTemperature()) + "C";
+                color = cWhite;
+            }
             break;
-        }
+        case DashboardView::D3P_BATT:
+            if (!slotD3P->isConnected) { text = "NC"; color = cRed; }
+            else {
+                 int batt = (int)currentData.deltaPro3.batteryLevel; // Directly access data or add getter in EcoflowESP32
+                 text = String(batt > 99 ? 99 : batt) + "%";
+                 color = cGreen;
+            }
+            break;
+        case DashboardView::AC_BATT:
+            if (!slotAC->isConnected) { text = "NC"; color = cRed; }
+            else {
+                 int batt = (int)currentData.alternatorCharger.batteryLevel;
+                 text = String(batt > 99 ? 99 : batt) + "%";
+                 color = cYellow;
+            }
+            break;
     }
 
     strip.setBrightness(brightness);
@@ -326,6 +332,26 @@ void drawDetailMenu(DeviceType activeType) {
             totIn = (currentData.wave2.batPwrWatt > 0) ? currentData.wave2.batPwrWatt : 0;
             break;
 
+        case DeviceType::DELTA_PRO_3:
+            acOn = currentData.deltaPro3.acLvPort || currentData.deltaPro3.acHvPort;
+            acOut = (int)(currentData.deltaPro3.acLvOutputPower + currentData.deltaPro3.acHvOutputPower);
+            dcOn = currentData.deltaPro3.dc12vPort;
+            dcOut = (int)currentData.deltaPro3.dc12vOutputPower;
+            usbOn = false; // Add USB flags if needed
+            solIn = (int)(currentData.deltaPro3.solarLvPower + currentData.deltaPro3.solarHvPower);
+            totIn = (int)currentData.deltaPro3.inputPower;
+            break;
+
+        case DeviceType::ALTERNATOR_CHARGER:
+            acOn = false;
+            acOut = 0;
+            dcOn = currentData.alternatorCharger.chargerOpen;
+            dcOut = (int)currentData.alternatorCharger.dcPower;
+            usbOn = false;
+            solIn = 0;
+            totIn = 0;
+            break;
+
         default:
             // Fallback for unknown devices
             acOn = false;
@@ -394,9 +420,16 @@ void drawEditScreen(String label, int value, String unit) {
     drawText(x, 1, text, color);
 }
 
-void drawDeviceSelectMenu(DeviceSlot* slotD3, DeviceSlot* slotW2) {
-    String text = (currentDevicePage == DevicePage::D3) ? "D3" : "W2";
-    uint32_t color = (currentDevicePage == DevicePage::D3) ? (slotD3->isConnected ? cGreen : cRed) : (slotW2->isConnected ? cGreen : cRed);
+void drawDeviceSelectMenu(DeviceSlot* slotD3, DeviceSlot* slotW2, DeviceSlot* slotD3P, DeviceSlot* slotAC) {
+    String text = "";
+    bool connected = false;
+    switch(currentDevicePage) {
+        case DevicePage::D3: text = "D3"; connected = slotD3->isConnected; break;
+        case DevicePage::W2: text = "W2"; connected = slotW2->isConnected; break;
+        case DevicePage::D3P: text = "D3P"; connected = slotD3P->isConnected; break;
+        case DevicePage::CHG: text = "CHG"; connected = slotAC->isConnected; break;
+    }
+    uint32_t color = connected ? cGreen : cRed;
     int width = getTextWidth(text) - 1;
     int x = (NUM_COLS - width) / 2;
     drawText(x, 1, text, color);
@@ -421,6 +454,8 @@ void updateDisplay(const EcoflowData& data, DeviceSlot* activeSlot, bool isScann
     currentData = data;
     DeviceSlot* slotD3 = DeviceManager::getInstance().getSlot(DeviceType::DELTA_3);
     DeviceSlot* slotW2 = DeviceManager::getInstance().getSlot(DeviceType::WAVE_2);
+    DeviceSlot* slotD3P = DeviceManager::getInstance().getSlot(DeviceType::DELTA_PRO_3);
+    DeviceSlot* slotAC = DeviceManager::getInstance().getSlot(DeviceType::ALTERNATOR_CHARGER);
 
     clearFrame();
 
@@ -436,7 +471,7 @@ void updateDisplay(const EcoflowData& data, DeviceSlot* activeSlot, bool isScann
     }
 
     if (currentState == MenuState::DASHBOARD) {
-        drawDashboard(slotD3, slotW2);
+        drawDashboard(slotD3, slotW2, slotD3P, slotAC);
     } else if (currentState == MenuState::SELECTION) {
         strip.setBrightness(25);
         drawSelectionMenu();
@@ -461,10 +496,14 @@ void updateDisplay(const EcoflowData& data, DeviceSlot* activeSlot, bool isScann
         drawEditScreen("DN", tempMinDsg, "%");
     } else if (currentState == MenuState::DEVICE_SELECT) {
         strip.setBrightness(25);
-        drawDeviceSelectMenu(slotD3, slotW2);
+        drawDeviceSelectMenu(slotD3, slotW2, slotD3P, slotAC);
     } else if (currentState == MenuState::DEVICE_ACTION) {
         strip.setBrightness(25);
-        DeviceSlot* s = (currentDevicePage == DevicePage::D3) ? slotD3 : slotW2;
+        DeviceSlot* s = nullptr;
+        if (currentDevicePage == DevicePage::D3) s = slotD3;
+        else if (currentDevicePage == DevicePage::W2) s = slotW2;
+        else if (currentDevicePage == DevicePage::D3P) s = slotD3P;
+        else if (currentDevicePage == DevicePage::CHG) s = slotAC;
         drawDeviceActionMenu(s);
     }
 
@@ -484,25 +523,14 @@ DisplayAction handleDisplayInput(ButtonInput input) {
 
     if (currentState == MenuState::DASHBOARD) {
         if (input == ButtonInput::BTN_UP || input == ButtonInput::BTN_DOWN) {
-             DeviceSlot* sW2 = DeviceManager::getInstance().getSlot(DeviceType::WAVE_2);
-             bool w2Avail = sW2->isConnected;
-             bool w2BattAvail = w2Avail && (sW2->instance->getBatteryLevel() > 0);
-
+             // Cycle through all available dashboard views
              int currentIdx = (int)currentDashboardView;
-             int nextIdx = currentIdx;
              int dir = (input == ButtonInput::BTN_UP) ? 1 : -1;
+             int nextIdx = currentIdx + dir;
+             if (nextIdx > 5) nextIdx = 0;
+             if (nextIdx < 0) nextIdx = 5;
+             currentDashboardView = (DashboardView)nextIdx;
 
-             for(int i=0; i<4; i++) {
-                 nextIdx += dir;
-                 if(nextIdx > 3) nextIdx = 0;
-                 if(nextIdx < 0) nextIdx = 3;
-
-                 DashboardView v = (DashboardView)nextIdx;
-                 if (v == DashboardView::D3_BATT) { currentDashboardView=v; break; }
-                 if (v == DashboardView::D3_SOLAR) { currentDashboardView=v; break; }
-                 if (v == DashboardView::W2_BATT && w2BattAvail) { currentDashboardView=v; break; }
-                 if (v == DashboardView::W2_TEMP && w2Avail) { currentDashboardView=v; break; }
-             }
         } else if (input == ButtonInput::BTN_ENTER_SHORT) {
             currentState = MenuState::SELECTION;
             currentSelection = SelectionPage::AC;
@@ -670,13 +698,19 @@ DisplayAction handleDisplayInput(ButtonInput input) {
         switch(input) {
             case ButtonInput::BTN_UP:
             case ButtonInput::BTN_DOWN:
-                if (currentDevicePage == DevicePage::D3) currentDevicePage = DevicePage::W2;
-                else currentDevicePage = DevicePage::D3;
+                {
+                    int idx = (int)currentDevicePage;
+                    idx = (idx + 1) % 4; // 4 devices
+                    currentDevicePage = (DevicePage)idx;
+                }
                 break;
             case ButtonInput::BTN_ENTER_SHORT:
                 currentState = MenuState::DEVICE_ACTION;
                 currentDeviceAction = DeviceActionPage::CON;
-                targetDeviceType = (currentDevicePage == DevicePage::D3) ? DeviceType::DELTA_3 : DeviceType::WAVE_2;
+                if (currentDevicePage == DevicePage::D3) targetDeviceType = DeviceType::DELTA_3;
+                else if (currentDevicePage == DevicePage::W2) targetDeviceType = DeviceType::WAVE_2;
+                else if (currentDevicePage == DevicePage::D3P) targetDeviceType = DeviceType::DELTA_PRO_3;
+                else if (currentDevicePage == DevicePage::CHG) targetDeviceType = DeviceType::ALTERNATOR_CHARGER;
                 break;
             default: break;
         }

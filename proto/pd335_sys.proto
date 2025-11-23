@@ -1,0 +1,549 @@
+syntax = "proto3";
+
+package pd335_sys;
+
+enum MODULE_TYPE {
+  MODULE_TYPE_EF = 0;
+}
+
+enum STATISTICS_OBJECT {
+  STATISTICS_OBJECT_START = 0;
+  STATISTICS_OBJECT_DEV_WORK_TIME = 1;
+  STATISTICS_OBJECT_AC_OUT_ENERGY = 2;
+  STATISTICS_OBJECT_DC12V_OUT_ENERGY = 3;
+  STATISTICS_OBJECT_TYPEC_OUT_ENERGY = 4;
+  STATISTICS_OBJECT_USBA_OUT_ENERGY = 5;
+  STATISTICS_OBJECT_AC_IN_ENERGY = 6;
+  STATISTICS_OBJECT_PV_IN_ENERGY = 7;
+  STATISTICS_OBJECT_AC_IN_0W_100W_TIME = 8;
+  STATISTICS_OBJECT_AC_IN_OVER_100W_TIME = 9;
+  STATISTICS_OBJECT_AC_OUT_0W_50W_TIME = 10;
+  STATISTICS_OBJECT_AC_OUT_50W_100W_TIME = 11;
+  STATISTICS_OBJECT_AC_OUT_100W_200W_TIME = 12;
+  STATISTICS_OBJECT_AC_OUT_OVER_200W_TIME = 13;
+  STATISTICS_OBJECT_AC_OUT_200W_300W_TIME = 14;
+  STATISTICS_OBJECT_AC_OUT_300W_400W_TIME = 15;
+  STATISTICS_OBJECT_AC_OUT_400W_500W_TIME = 16;
+  STATISTICS_OBJECT_AC_OUT_OVER_500W_TIME = 17;
+  STATISTICS_OBJECT_PV_IN_TIME = 18;
+  STATISTICS_OBJECT_TYPEC_IN_TIME = 19;
+  STATISTICS_OBJECT_DC_OUT_0W_60W_TIME = 20;
+  STATISTICS_OBJECT_DC_OUT_OVER_60W_TIME = 21;
+  STATISTICS_OBJECT_TYPEC_OUT_0W_30W_TIME = 22;
+  STATISTICS_OBJECT_TYPEC_OUT_30W_60W_TIME = 23;
+  STATISTICS_OBJECT_TYPEC_OUT_OVER_60W_TIME = 24;
+  STATISTICS_OBJECT_USBA_OUT_TIME = 25;
+  STATISTICS_OBJECT_LED_OUT_TIME = 26;
+}
+
+enum AC_IN_CHG_MODE {
+  AC_IN_CHG_MODE_SELF_DEF_POW = 0;
+  AC_IN_CHG_MODE_BAT_OPTIMAL_POW = 1;
+  AC_IN_CHG_MODE_SILENCE = 2;
+}
+
+enum PV_PLUG_INDEX {
+  PV_PLUG_INDEX_RESV = 0;
+  PV_PLUG_INDEX_1 = 1;
+  PV_PLUG_INDEX_2 = 2;
+}
+
+enum PV_CHG_VOL_SPEC {
+  PV_CHG_VOL_SPEC_RESV = 0;
+  PV_CHG_VOL_SPEC_12V = 1;
+  PV_CHG_VOL_SPEC_24V = 2;
+  PV_CHG_VOL_SPEC_48V = 3;
+}
+
+enum TIME_TASK_MODE {
+  TIME_TASK_MODE_RESV = 0;
+  TIME_TASK_MODE_PER_WEEK = 1;
+  TIME_TASK_MODE_ONCE = 2;
+}
+
+enum TIME_TASK_TYPE {
+  TIME_TASK_TYPE_AC_CHG = 0;
+  TIME_TASK_TYPE_AC_DSG = 1;
+  TIME_TASK_TYPE_AC2_DSG = 2;
+  TIME_TASK_TYPE_DC_CHG = 3;
+  TIME_TASK_TYPE_DC2_CHG = 4;
+  TIME_TASK_TYPE_DC_DSG = 5;
+  TIME_TASK_TYPE_OIL_ON = 6;
+  TIME_TASK_TYPE_OIL_OFF = 7;
+  TIME_TASK_TYPE_USB_CHG = 8;
+  TIME_TASK_TYPE_USB_DSG = 9;
+}
+
+enum TIME_TASK_DETAIL_TYPE {
+  TIME_TASK_DETAIL_IDLE = 0;
+  TIME_TASK_DETAIL_POW = 1;
+  TIME_TASK_DETAIL_TEMP = 2;
+  TIME_TASK_DETAIL_LEVEL = 3;
+}
+
+message EventPush {
+  message LogItem {
+    optional uint32 unix_time = 1;
+    optional uint32 ms = 2;
+    optional uint32 event_no = 3;
+    repeated float event_detail = 4;
+  }
+
+  optional uint32 event_ver = 1;
+  optional uint32 event_seq = 2;
+  repeated EventPush.LogItem event_item = 3;
+}
+
+message EventAck {
+  optional uint32 result = 1;
+  optional uint32 event_seq = 2;
+  optional uint32 event_item_num = 3;
+}
+
+message ReqTouStrategy {
+  optional uint32 req_state = 1;
+}
+
+message CfgBeep {
+  optional int32 beep_act_count = 1;
+  optional uint32 beep_act_ms = 2;
+}
+
+message CfgAcOutAlwaysOn {
+  optional bool ac_always_on_flag = 1;
+  optional uint32 ac_always_on_mini_soc = 2;
+}
+
+message CfgBmsPowerOffWriteAck {
+  optional bool bms_power_off = 1;
+  optional uint32 bms_power_state = 2;
+}
+
+message CfgBmsPushWrite {
+  optional bool bms_heartbeap_open = 1;
+  optional bool bms_health_open = 2;
+  optional uint32 bms_heartbeap_freq = 3;
+  optional uint32 bms_health_freq = 4;
+}
+
+message CfgBmsPushWriteAck {
+  optional bool bms_heartbeap_open = 1;
+  optional bool bms_health_open = 2;
+}
+
+message SetTimeTaskWrite {
+  optional uint32 task_index = 1;
+  optional bool is_valid = 2;
+  optional bool is_cfg = 3;
+  optional bool is_enable = 4;
+  optional uint32 conflict_flag = 5;
+  optional uint32 type = 6;
+  optional uint32 time_mode = 7;
+  optional uint32 time_param = 8;
+  repeated uint32 time_table = 9;
+}
+
+message SetTimeTaskWriteAck {
+  optional uint32 task_index = 1;
+  optional uint32 type = 2;
+  optional uint32 sta = 3;
+}
+
+message GetAllTimeTaskReadck {
+  repeated SetTimeTaskWrite time_task = 1;
+}
+
+message CfgEnergyBackup {
+  optional bool energy_backup_en = 1;
+  optional uint32 energy_backup_start_soc = 2;
+}
+
+message CfgTouStrategy {
+  repeated uint32 tou_hours_strategy = 1;
+  optional uint32 tou_gird_chg_stop_soc = 2;
+}
+
+message CfgStormPattern {
+  optional bool storm_pattern_enable = 1;
+  optional bool storm_pattern_open_flag = 2;
+  optional uint32 storm_pattern_end_time = 3;
+}
+
+message CfgGeneratorMpptHybridMode {
+  optional bool generator_pv_hybrid_mode_open = 1;
+  optional uint32 generator_pv_hybrid_mode_soc_max = 2;
+}
+
+message CfgGeneratorCareMode {
+  optional bool generator_care_mode_open = 1;
+  optional uint32 generator_care_mode_start_time = 2;
+}
+
+message CfgEnergyStrategyOperateMode {
+  optional bool operate_self_powered_open = 1;
+  optional bool operate_scheduled_open = 2;
+  optional bool operate_tou_mode_open = 3;
+}
+
+message ResvInfo {
+  repeated uint32 resv_info = 1;
+}
+
+message PropertyUploadPeriod {
+  optional int32 display_property_full_upload_period = 1;
+  optional int32 display_property_incremental_upload_period = 2;
+  optional int32 runtime_property_full_upload_period = 3;
+  optional int32 runtime_property_incremental_upload_period = 4;
+}
+
+message PvDcChgSetting {
+  optional PV_PLUG_INDEX pv_plug_index = 1;
+  optional PV_CHG_VOL_SPEC pv_chg_vol_spec = 2;
+  optional uint32 pv_chg_amp_limit = 3;
+}
+
+message PvDcChgSettingList {
+  repeated PvDcChgSetting list_info = 1;
+}
+
+message PvChgMaxItem {
+  optional uint32 pv_chg_vol_type = 1;
+  optional uint32 pv_chg_amp_max = 2;
+  optional uint32 pv_chg_amp_mini = 3;
+}
+
+message PvChgMaxList {
+  repeated PvChgMaxItem pv_chg_max_item = 1;
+}
+
+message WirelessCoordinateList {
+  optional bool connect_flag = 1;
+  optional uint32 dev_type = 2;
+  optional uint32 dev_detail = 3;
+  optional string dev_sn = 4;
+  optional uint32 dev_firm_ver = 5;
+  optional uint32 dev_err_code = 6;
+}
+
+message ConfigWrite {
+  optional bool cfg_power_off = 3;
+  optional bool cfg_power_on = 4;
+  optional uint32 reset_factory_setting = 5;
+  optional uint32 cfg_utc_time = 6;
+  optional int32 cfg_utc_timezone = 7;
+  optional CfgBeep cfg_beep = 8;
+  optional bool cfg_beep_en = 9;
+  optional uint32 cfg_ac_standby_time = 10;
+  optional uint32 cfg_dc_standby_time = 11;
+  optional uint32 cfg_screen_off_time = 12;
+  optional uint32 cfg_dev_standby_time = 13;
+  optional uint32 cfg_lcd_light = 14;
+  optional uint32 cfg_ac_out_freq = 17;
+  optional bool cfg_dc_12v_out_open = 18;
+  optional bool cfg_usb_open = 19;
+  optional bool cfg_dc_out_open = 20;
+  optional CfgAcOutAlwaysOn cfg_ac_out_always_on = 23;
+  optional bool cfg_xboost_en = 25;
+  optional bool cfg_bypass_out_disable = 26;
+  optional bool cfg_bms_power_off = 30;
+  optional uint32 cfg_soc_cali = 31;
+  optional CfgBmsPushWrite cfg_bms_push = 32;
+  optional uint32 cfg_max_chg_soc = 33;
+  optional uint32 cfg_min_dsg_soc = 34;
+  optional SetTimeTaskWrite set_time_task = 39;
+  optional CfgEnergyBackup cfg_energy_backup = 43;
+  optional uint32 cfg_plug_in_info_ac_in_chg_pow_max = 54;
+  optional bool cfg_cms_oil_self_start = 58;
+  optional uint32 cfg_cms_oil_on_soc = 59;
+  optional uint32 cfg_cms_oil_off_soc = 60;
+  optional CfgTouStrategy cfg_tou_strategy = 65;
+  optional int32 cfg_display_property_full_upload_period = 67;
+  optional int32 cfg_display_property_incremental_upload_period = 68;
+  optional int32 cfg_runtime_property_full_upload_period = 69;
+  optional int32 cfg_runtime_property_incremental_upload_period = 70;
+  optional bool active_display_property_full_upload = 71;
+  optional bool active_runtime_property_full_upload = 72;
+  optional bool cfg_ac_out_open = 76;
+  optional uint32 cfg_plug_in_info_pv_dc_amp_max = 87;
+  optional CfgStormPattern cfg_storm_pattern = 93;
+  optional CfgGeneratorMpptHybridMode cfg_generator_mppt_hybrid_mode = 95;
+  optional CfgGeneratorCareMode cfg_generator_care_mode = 97;
+  optional uint32 cfg_backup_reverse_soc = 102;
+  optional CfgEnergyStrategyOperateMode cfg_energy_strategy_operate_mode = 106;
+  optional AC_IN_CHG_MODE cfg_ac_in_chg_mode = 125;
+  optional PvDcChgSetting cfg_pv_dc_chg_setting = 126;
+  optional string cfg_utc_timezone_id = 135;
+  optional bool cfg_utc_set_mode = 136;
+  optional bool cfg_wireless_oil_self_start = 138;
+  optional uint32 cfg_wireless_oil_on_soc = 139;
+  optional uint32 cfg_wireless_oil_off_soc = 140;
+  optional bool cfg_output_power_off_memory = 141;
+}
+
+message ConfigWriteAck {
+  optional uint32 action_id = 1;
+  optional bool config_ok = 2;
+  optional bool cfg_power_off = 3;
+  optional bool cfg_power_on = 4;
+  optional uint32 reset_factory_setting = 5;
+  optional uint32 cfg_utc_time = 6;
+  optional int32 cfg_utc_timezone = 7;
+  optional CfgBeep cfg_beep = 8;
+  optional bool cfg_beep_en = 9;
+  optional uint32 cfg_ac_standby_time = 10;
+  optional uint32 cfg_dc_standby_time = 11;
+  optional uint32 cfg_screen_off_time = 12;
+  optional uint32 cfg_dev_standby_time = 13;
+  optional uint32 cfg_lcd_light = 14;
+  optional uint32 cfg_ac_out_freq = 17;
+  optional bool cfg_dc_12v_out_open = 18;
+  optional bool cfg_usb_open = 19;
+  optional bool cfg_dc_out_open = 20;
+  optional CfgAcOutAlwaysOn cfg_ac_out_always_on = 23;
+  optional bool cfg_xboost_en = 25;
+  optional bool cfg_bypass_out_disable = 26;
+  optional CfgBmsPowerOffWriteAck cfg_bms_power_off = 30;
+  optional uint32 cfg_soc_cali = 31;
+  optional CfgBmsPushWriteAck cfg_bms_push = 32;
+  optional uint32 cfg_max_chg_soc = 33;
+  optional uint32 cfg_min_dsg_soc = 34;
+  optional SetTimeTaskWriteAck set_time_task = 39;
+  optional CfgEnergyBackup cfg_energy_backup = 43;
+  optional uint32 cfg_plug_in_info_ac_in_chg_pow_max = 54;
+  optional bool cfg_cms_oil_self_start = 58;
+  optional uint32 cfg_cms_oil_on_soc = 59;
+  optional uint32 cfg_cms_oil_off_soc = 60;
+  optional CfgTouStrategy cfg_tou_strategy = 65;
+  optional int32 cfg_display_property_full_upload_period = 67;
+  optional int32 cfg_display_property_incremental_upload_period = 68;
+  optional int32 cfg_runtime_property_full_upload_period = 69;
+  optional int32 cfg_runtime_property_incremental_upload_period = 70;
+  optional bool active_display_property_full_upload = 71;
+  optional bool active_runtime_property_full_upload = 72;
+  optional bool cfg_ac_out_open = 76;
+  optional uint32 cfg_plug_in_info_pv_dc_amp_max = 87;
+  optional CfgStormPattern cfg_storm_pattern = 93;
+  optional CfgGeneratorMpptHybridMode cfg_generator_mppt_hybrid_mode = 95;
+  optional CfgGeneratorCareMode cfg_generator_care_mode = 97;
+  optional uint32 cfg_backup_reverse_soc = 102;
+  optional CfgEnergyStrategyOperateMode cfg_energy_strategy_operate_mode = 106;
+  optional AC_IN_CHG_MODE cfg_ac_in_chg_mode = 125;
+  optional PvDcChgSetting cfg_pv_dc_chg_setting = 126;
+  optional string cfg_utc_timezone_id = 135;
+  optional bool cfg_utc_set_mode = 136;
+  optional bool cfg_wireless_oil_self_start = 138;
+  optional uint32 cfg_wireless_oil_on_soc = 139;
+  optional uint32 cfg_wireless_oil_off_soc = 140;
+  optional bool cfg_output_power_off_memory = 141;
+}
+
+message ConfigRead {
+  repeated uint32 action_id = 1;
+}
+
+message ConfigReadAck {
+  optional uint32 cfg_utc_time = 6;
+  optional int32 cfg_utc_timezone = 7;
+  optional GetAllTimeTaskReadck get_time_task_list = 41;
+}
+
+message DisplayPropertyUpload {
+  optional uint32 errcode = 1;
+  optional int32 utc_timezone = 133;
+  optional string utc_timezone_id = 134;
+  optional bool utc_set_mode = 135;
+  optional uint32 cms_bms_run_state = 275;
+  optional float cms_batt_soc = 262;
+  optional float cms_batt_soh = 263;
+  optional uint32 cms_chg_dsg_state = 282;
+  optional uint32 cms_batt_full_energy = 462;
+  optional uint32 cms_dsg_rem_time = 268;
+  optional uint32 cms_chg_rem_time = 269;
+  optional uint32 cms_batt_pow_out_max = 459;
+  optional uint32 cms_batt_pow_in_max = 460;
+  optional uint32 cms_max_chg_soc = 270;
+  optional uint32 cms_min_dsg_soc = 271;
+  optional float bms_batt_soc = 242;
+  optional float bms_batt_soh = 243;
+  optional uint32 bms_chg_dsg_state = 281;
+  optional uint32 bms_design_cap = 248;
+  optional uint32 bms_dsg_rem_time = 254;
+  optional uint32 bms_chg_rem_time = 255;
+  optional int32 bms_min_cell_temp = 258;
+  optional int32 bms_max_cell_temp = 259;
+  optional int32 bms_min_mos_temp = 260;
+  optional int32 bms_max_mos_temp = 261;
+  optional string bms_main_sn = 392;
+  optional uint32 dev_sleep_state = 212;
+  optional bool en_beep = 195;
+  optional uint32 lcd_light = 5;
+  optional uint32 dev_standby_time = 17;
+  optional uint32 screen_off_time = 18;
+  optional uint32 ac_standby_time = 19;
+  optional uint32 dc_standby_time = 20;
+  optional uint32 ac_out_freq = 211;
+  optional bool ac_always_on_flag = 22;
+  optional uint32 ac_always_on_mini_soc = 23;
+  optional bool xboost_en = 25;
+  optional bool output_power_off_memory = 147;
+  optional uint32 fast_charge_switch = 182;
+  optional bool bypass_out_disable = 146;
+  optional uint32 bypass_out_disable_conflict_flag = 398;
+  optional PvDcChgSettingList pv_dc_chg_setting_list = 125;
+  optional uint32 energy_backup_start_soc = 8;
+  optional bool energy_backup_en = 7;
+  optional bool storm_pattern_enable = 467;
+  optional bool storm_pattern_open_flag = 468;
+  optional uint32 storm_pattern_end_time = 469;
+  optional uint32 storm_pattern_conflict_flag = 397;
+  optional SetTimeTaskWrite time_task_current = 219;
+  optional uint32 time_task_conflict_flag = 285;
+  optional uint32 time_task_change_cnt = 286;
+  optional CfgEnergyStrategyOperateMode energy_strategy_operate_mode = 393;
+  optional uint32 backup_reverse_soc = 461;
+  optional uint32 energy_backup_conflict_flag = 394;
+  optional uint32 self_powered_conflict_flag = 395;
+  optional uint32 tou_mode_conflict_flag = 396;
+  optional bool cms_oil_self_start = 274;
+  optional uint32 cms_oil_on_soc = 272;
+  optional uint32 cms_oil_off_soc = 273;
+  optional bool wireless_oil_self_start = 143;
+  optional uint32 wireless_oil_on_soc = 144;
+  optional uint32 wireless_oil_off_soc = 145;
+  optional float pow_in_sum_w = 3;
+  optional float pow_out_sum_w = 4;
+  optional float pow_get_qcusb1 = 9;
+  optional float pow_get_qcusb2 = 10;
+  optional float pow_get_typec1 = 11;
+  optional float pow_get_typec2 = 12;
+  optional float pow_get_pv = 361;
+  optional float pow_get_pv2 = 70;
+  optional float pow_get_12v = 37;
+  optional float pow_get_ac = 53;
+  optional float pow_get_ac_in = 54;
+  optional float pow_get_ac_out = 368;
+  optional float pow_get_dc = 297;
+  optional float pow_get_bms = 158;
+  optional float pow_get_dcp = 425;
+  optional uint32 flow_info_qcusb1 = 13;
+  optional uint32 flow_info_qcusb2 = 14;
+  optional uint32 flow_info_typec1 = 15;
+  optional uint32 flow_info_typec2 = 16;
+  optional uint32 flow_info_pv = 360;
+  optional uint32 flow_info_pv2 = 414;
+  optional uint32 flow_info_12v = 33;
+  optional uint32 flow_info_ac2dc = 45;
+  optional uint32 flow_info_dc2ac = 46;
+  optional uint32 flow_info_ac_in = 47;
+  optional uint32 flow_info_ac_out = 367;
+  optional uint32 flow_info_bms_dsg = 152;
+  optional uint32 flow_info_bms_chg = 153;
+  optional uint32 flow_info_dcp_in = 423;
+  optional uint32 flow_info_dcp_out = 424;
+  optional bool plug_in_info_pv_flag = 362;
+  optional uint32 plug_in_info_pv_type = 363;
+  optional bool plug_in_info_pv_charger_flag = 364;
+  optional uint32 plug_in_info_pv_dc_amp_max = 356;
+  optional uint32 plug_in_info_pv_chg_amp_max = 365;
+  optional uint32 plug_in_info_pv_chg_vol_max = 366;
+  optional PvChgMaxList plug_in_info_pv_chg_max_list = 136;
+  optional bool plug_in_info_pv2_flag = 421;
+  optional uint32 plug_in_info_pv2_type = 422;
+  optional bool plug_in_info_pv2_charger_flag = 430;
+  optional uint32 plug_in_info_pv2_dc_amp_max = 80;
+  optional uint32 plug_in_info_pv2_chg_amp_max = 81;
+  optional uint32 plug_in_info_pv2_chg_vol_max = 82;
+  optional PvChgMaxList plug_in_info_pv2_chg_max_list = 137;
+  optional uint32 plug_in_info_ac_in_flag = 61;
+  optional bool plug_in_info_ac_charger_flag = 202;
+  optional uint32 plug_in_info_ac_in_feq = 62;
+  optional uint32 plug_in_info_ac_in_chg_pow_max = 209;
+  optional AC_IN_CHG_MODE plug_in_info_ac_in_chg_mode = 124;
+  optional uint32 plug_in_info_ac_out_dsg_pow_max = 238;
+  optional bool plug_in_info_dcp_in_flag = 426;
+  optional uint32 plug_in_info_dcp_dsg_chg_type = 431;
+  optional bool plug_in_info_dcp_charger_flag = 435;
+  optional uint32 plug_in_info_dcp_type = 427;
+  optional uint32 plug_in_info_dcp_detail = 428;
+  optional string plug_in_info_dcp_sn = 433;
+  optional uint32 plug_in_info_dcp_run_state = 436;
+  optional uint32 plug_in_info_dcp_firm_ver = 434;
+  optional ResvInfo plug_in_info_dcp_resv = 432;
+  optional WirelessCoordinateList wireless_coordinate_dev_list = 142;
+  optional uint32 pd_err_code = 213;
+  optional uint32 dcdc_err_code = 437;
+  optional uint32 plug_in_info_dcp_err_code = 438;
+  optional uint32 bms_err_code = 140;
+  optional uint32 inv_err_code = 450;
+  optional uint32 pcs_fan_level = 30;
+  optional uint32 pcs_fan_err_flag = 226;
+}
+
+message RuntimePropertyUpload {
+  optional int32 display_property_full_upload_period = 293;
+  optional int32 display_property_incremental_upload_period = 294;
+  optional int32 runtime_property_full_upload_period = 295;
+  optional int32 runtime_property_incremental_upload_period = 296;
+  optional float cms_batt_vol = 264;
+  optional float cms_batt_amp = 265;
+  optional float cms_chg_req_vol = 266;
+  optional float cms_chg_req_amp = 267;
+  optional uint32 bms_firm_ver = 241;
+  optional float bms_batt_vol = 244;
+  optional float bms_batt_amp = 245;
+  optional uint32 bms_bal_state = 246;
+  optional uint32 bms_full_cap = 247;
+  optional uint32 bms_remain_cap = 249;
+  optional uint32 bms_alm_state = 250;
+  optional uint32 bms_alm_state_2 = 291;
+  optional uint32 bms_pro_state = 251;
+  optional uint32 bms_pro_state_2 = 292;
+  optional uint32 bms_flt_state = 252;
+  optional uint32 bms_err_code = 253;
+  optional uint32 bms_min_cell_vol = 256;
+  optional uint32 bms_max_cell_vol = 257;
+  optional float plug_in_info_pv_vol = 380;
+  optional float plug_in_info_pv_amp = 381;
+  optional float plug_in_info_pv2_vol = 442;
+  optional float plug_in_info_pv2_amp = 71;
+  optional float plug_in_info_ac_in_vol = 68;
+  optional float plug_in_info_ac_in_amp = 223;
+  optional uint32 plug_in_info_ac_out_type = 59;
+  optional uint32 plug_in_info_ac_out_freq = 60;
+  optional float plug_in_info_ac_out_vol = 67;
+  optional float plug_in_info_ac_out_amp = 224;
+  optional float plug_in_info_bms_vol = 169;
+  optional float plug_in_info_dcp_vol = 443;
+  optional float plug_in_info_dcp_amp = 448;
+  optional bool pd_bms_comm_err = 174;
+  optional bool pd_iot_comm_err = 175;
+  optional bool pd_dcdc_comm_err = 444;
+  optional bool pd_inv_comm_err = 445;
+  optional uint32 pd_firm_ver = 176;
+  optional uint32 iot_firm_ver = 177;
+  optional uint32 dcdc_firm_ver = 446;
+  optional uint32 inv_firm_ver = 447;
+  optional float temp_pcs_dc = 26;
+  optional float temp_pcs_ac = 27;
+  optional float temp_pv = 379;
+  optional float temp_pv2 = 440;
+  optional uint32 bms_overload_icon = 276;
+  optional uint32 bms_warn_icon = 277;
+  optional uint32 bms_high_temp_icon = 278;
+  optional uint32 bms_low_temp_icon = 279;
+  optional uint32 bms_limit_icon = 280;
+}
+
+message DevRequest {
+  optional uint32 dev_utc_time = 1;
+  optional float dev_utc_timezone = 2;
+  optional bool require_property_upload_period = 3;
+  optional ReqTouStrategy require_tou_strategy = 4;
+  optional bool require_time_service = 5;
+}
+
+message DevRequestAck {
+  optional uint32 request_id = 1;
+  optional uint32 require_ok = 2;
+  optional PropertyUploadPeriod property_upload_period = 3;
+}
