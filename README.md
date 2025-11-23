@@ -11,6 +11,9 @@
 
 ---
 
+![alt text](https://github.com/lollokara/ESP32-Ecoflow-BLE/blob/main/docs/Dashboard.jpeg?raw=true)
+
+
 ## ≡ SYSTEM CAPABILITIES
 
 *   **[>> COMPLETE LOCAL CONTROL]**: Bypass the cloud. Toggle AC/DC/USB ports directly from your microcontroller.
