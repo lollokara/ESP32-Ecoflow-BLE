@@ -40,3 +40,9 @@
 # debug information files
 *.dwo
 .DS_Store
+
+# macOS metadata
+.DS_Store
+._*
+**/.DS_Store
+**/._*
