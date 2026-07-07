@@ -4,8 +4,6 @@
 ![Platform: ESP32](https://img.shields.io/badge/Platform-ESP32-blue.svg?style=for-the-badge&logo=espressif)
 ![Status: ONLINE](https://img.shields.io/badge/Status-ONLINE-brightgreen.svg?style=for-the-badge&blink=true)
 
-> **WARNING:** UNAUTHORIZED CLOUD DISCONNECTION IMMINENT.
-> **TARGET:** LOCAL CONTROL ESTABLISHED.
 
 **EcoflowESP32** is a futuristic, reverse-engineered C++ library for the ESP32 that enables **direct, offline control** of EcoFlow power stations via Bluetooth Low Energy (BLE). No clouds, no servers, just you and your hardware.
 
